@@ -64,6 +64,7 @@ class TypeName(enum.Enum):
     BLOB = 'blobValue'
     BOOLEAN = 'booleanValue'
     DOUBLE = 'doubleValue'
+    ENTITY = 'entityValue'
     INTEGER = 'integerValue'
     GEOPOINT = 'geoPointValue'
     KEY = 'keyValue'

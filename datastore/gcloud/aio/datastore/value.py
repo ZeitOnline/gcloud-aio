@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Any
 from typing import Dict
 
+import gcloud.aio.datastore.entity
 from gcloud.aio.datastore.array import Array
 from gcloud.aio.datastore.constants import TypeName
 from gcloud.aio.datastore.constants import TYPES
@@ -41,10 +42,10 @@ class Value:  # pylint:disable=useless-object-inheritance
                 elif value_type == datetime:
                     value = datetime.strptime(data[json_key],
                                               '%Y-%m-%dT%H:%M:%S.%f000Z')
-                elif value_type == cls.key_kind:
-                    value = cls.key_kind.from_repr(data[json_key])
-                elif value_type == LatLng:
-                    value = LatLng.from_repr(data[json_key])
+                elif value_type in [cls.key_kind,
+                                    LatLng,
+                                    gcloud.aio.datastore.entity.Entity]:
+                    value = value_type.from_repr(data[json_key])
                 else:
                     value = value_type(data[json_key])
                 break
@@ -63,7 +64,8 @@ class Value:  # pylint:disable=useless-object-inheritance
 
     def to_repr(self) -> Dict[str, Any]:
         value_type = self._infer_type(self.value)
-        if value_type in {TypeName.ARRAY, TypeName.GEOPOINT, TypeName.KEY}:
+        if value_type in {TypeName.ARRAY, TypeName.ENTITY,
+                          TypeName.GEOPOINT, TypeName.KEY}:
             value = self.value.to_repr()
         elif value_type == TypeName.TIMESTAMP:
             value = self.value.strftime('%Y-%m-%dT%H:%M:%S.%f000Z')
@@ -92,5 +94,6 @@ class Value:  # pylint:disable=useless-object-inheritance
         supported_types.update({
             cls.key_kind: TypeName.KEY,
             Array: TypeName.ARRAY,
+            gcloud.aio.datastore.entity.Entity: TypeName.ENTITY,
         })
         return supported_types
